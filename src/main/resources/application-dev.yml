@@ -1,0 +1,16 @@
+spring:
+  profiles:
+    active: dev
+  application:
+    name: Online Goods Store
+    group: ru.anokhin.dev
+    version: 0.0.1
+
+server:
+  address: localhost
+  port: 8080
+  servlet:
+    context-path: /online-goods-store
+    encoding:
+      charset: UTF-8
+      enabled: true
