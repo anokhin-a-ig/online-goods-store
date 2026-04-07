@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: Online Goods Store
+    group: ru.anokhin.dev
+    version: 0.0.1
+
+  liquibase:
+    enabled: false
+
+server:
+  address: localhost
+  port: 8082
+  servlet:
+    context-path: /online-goods-store
+    encoding:
+      charset: UTF-8
+      enabled: true
