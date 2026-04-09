@@ -11,3 +11,7 @@
 
 и создать три разных профиля. В каждом из профилей указать в поле "Active profiles" суффикс соответствующего application-<суффикс>.yml файла для каждого профиля
 ![img.png](images/dev-profile.png)
+
+
+
+awdawdawd
