@@ -5,6 +5,5 @@ public enum Role {
 
     ADMIN,
     MANAGER,
-    REGISTER_USER,
-    UNREGISTER_USER
+    REGISTER_USER
 }

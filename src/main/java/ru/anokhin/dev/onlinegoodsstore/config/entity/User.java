@@ -18,7 +18,7 @@ public class User {
 
     private String email;
 
-    private String Username;
+    private String username;
 
     private String password;
 
@@ -28,5 +28,7 @@ public class User {
 
     private Boolean isBlocked;
 
-    private LocalDateTime blocked_to;
+    private LocalDateTime blocked_at;
+
+    private Cart cart;
 }
