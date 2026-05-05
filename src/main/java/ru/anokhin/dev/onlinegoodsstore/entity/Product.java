@@ -1,13 +1,19 @@
 package ru.anokhin.dev.onlinegoodsstore.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
@@ -20,11 +26,11 @@ public class Product {
     @Column
     private Double price;
     @Column
-    private double stock_quantity; // остаток на складе
-//    @Column
-//    private List<Byte[]> bytes; // ссылка на картинку товара
+    private int stockQuantity; // остаток на складе
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private Category category;
     @Column
-    private Category category_id; //
-    @Column
-    private LocalDateTime created_at;
+    private LocalDateTime createdAt;
 }

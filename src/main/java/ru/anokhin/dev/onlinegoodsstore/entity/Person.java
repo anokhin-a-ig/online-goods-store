@@ -2,17 +2,24 @@ package ru.anokhin.dev.onlinegoodsstore.entity;
 
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity (name = "Person")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private UUID id;
+    private Long id;
 
     @Column
     private String firstName; // имя
@@ -21,7 +28,7 @@ public class Person {
     @Column
     private String lastName; // фамилия
     @Column
-    private int age; // возраст
+    private LocalDate birthDate;
     @OneToOne
     private User user; // Логин+пароль
     @Column
