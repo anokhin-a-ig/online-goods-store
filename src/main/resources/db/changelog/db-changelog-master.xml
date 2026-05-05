@@ -10,5 +10,5 @@
     <property name="table.engine" value="InnoDB" dbms="mysql"/>
 
     <!-- Включение по версиям -->
-    <include file="2026/05/05-01-changelog.xml" relativeToChangelogFile="true"/>
+    <include file="release-0-0-1/01-changelog.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

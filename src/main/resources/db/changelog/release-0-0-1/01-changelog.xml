@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1778014714795-1" author="Anokhin.A.Ig">
+        <createTable tableName="cart">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart"/>
+            </column>
+            <column name="user_id" type="BIGINT"/>
+            <column name="session_id" type="VARCHAR(255)"/>
+            <column name="created_at" type="DATETIME"/>
+            <column name="updated_at" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-2" author="Anokhin.A.Ig">
+        <createTable tableName="cart_items">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_cart_items"/>
+            </column>
+            <column name="cart_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="INT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-3" author="Anokhin.A.Ig">
+        <createTable tableName="category">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_category"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="parent_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-4" author="Anokhin.A.Ig">
+        <createTable tableName="person">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_person"/>
+            </column>
+            <column name="first_name" type="VARCHAR(255)"/>
+            <column name="middle_name" type="VARCHAR(255)"/>
+            <column name="last_name" type="VARCHAR(255)"/>
+            <column name="birth_date" type="DATE"/>
+            <column name="user_id" type="BIGINT"/>
+            <column name="street" type="VARCHAR(255)"/>
+            <column name="house" type="VARCHAR(255)"/>
+            <column name="house_part" type="VARCHAR(255)"/>
+            <column name="apartment" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-5" author="Anokhin.A.Ig">
+        <createTable tableName="product">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_product"/>
+            </column>
+            <column name="name" type="VARCHAR(255)"/>
+            <column name="description" type="VARCHAR(255)"/>
+            <column name="price" type="DOUBLE"/>
+            <column name="stock_quantity" type="INT"/>
+            <column name="category_id" type="BIGINT"/>
+            <column name="created_at" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-6" author="Anokhin.A.Ig">
+        <createTable tableName="role">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_role"/>
+            </column>
+            <column name="role_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-7" author="Anokhin.A.Ig">
+        <createTable tableName="role_users">
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_role_users"/>
+            </column>
+            <column name="users_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_role_users"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-8" author="Anokhin.A.Ig">
+        <createTable tableName="user">
+            <column autoIncrement="true" name="id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="VARCHAR(255)"/>
+            <column name="person_id" type="BIGINT"/>
+            <column name="create_at" type="DATETIME"/>
+            <column name="is_blocked" type="BOOLEAN"/>
+            <column name="blocked_at" type="DATETIME"/>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-9" author="Anokhin.A.Ig">
+        <createTable tableName="user_roles">
+            <column name="role_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_roles"/>
+            </column>
+            <column name="user_id" type="BIGINT">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="pk_user_roles"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet id="1778014714795-10" author="Anokhin.A.Ig">
+        <addUniqueConstraint columnNames="user_id" constraintName="uc_cart_user" tableName="cart"/>
+    </changeSet>
+    <changeSet id="1778014714795-11" author="Anokhin.A.Ig">
+        <addUniqueConstraint columnNames="cart_id, product_id" constraintName="uc_e020537f6d07b2305eddbe2b3"
+                             tableName="cart_items"/>
+    </changeSet>
+    <changeSet id="1778014714795-12" author="Anokhin.A.Ig">
+        <addUniqueConstraint columnNames="role_name" constraintName="uc_role_rolename" tableName="role"/>
+    </changeSet>
+    <changeSet id="1778014714795-13" author="Anokhin.A.Ig">
+        <addUniqueConstraint columnNames="username" constraintName="uc_user_username" tableName="user"/>
+    </changeSet>
+    <changeSet id="1778014714795-14" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="cart_id" baseTableName="cart_items"
+                                 constraintName="FK_CART_ITEMS_ON_CART" referencedColumnNames="id"
+                                 referencedTableName="cart"/>
+    </changeSet>
+    <changeSet id="1778014714795-15" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="product_id" baseTableName="cart_items"
+                                 constraintName="FK_CART_ITEMS_ON_PRODUCT" referencedColumnNames="id"
+                                 referencedTableName="product"/>
+    </changeSet>
+    <changeSet id="1778014714795-16" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="cart" constraintName="FK_CART_ON_USER"
+                                 referencedColumnNames="id" referencedTableName="user"/>
+    </changeSet>
+    <changeSet id="1778014714795-17" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="parent_id" baseTableName="category"
+                                 constraintName="FK_CATEGORY_ON_PARENT" referencedColumnNames="id"
+                                 referencedTableName="category"/>
+    </changeSet>
+    <changeSet id="1778014714795-18" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="person" constraintName="FK_PERSON_ON_USER"
+                                 referencedColumnNames="id" referencedTableName="user"/>
+    </changeSet>
+    <changeSet id="1778014714795-19" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="category_id" baseTableName="product"
+                                 constraintName="FK_PRODUCT_ON_CATEGORY" referencedColumnNames="id"
+                                 referencedTableName="category"/>
+    </changeSet>
+    <changeSet id="1778014714795-20" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="person_id" baseTableName="user" constraintName="FK_USER_ON_PERSON"
+                                 referencedColumnNames="id" referencedTableName="person"/>
+    </changeSet>
+    <changeSet id="1778014714795-21" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="role_users" constraintName="fk_roluse_on_role"
+                                 referencedColumnNames="id" referencedTableName="role"/>
+    </changeSet>
+    <changeSet id="1778014714795-22" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="users_id" baseTableName="role_users"
+                                 constraintName="fk_roluse_on_user" referencedColumnNames="id"
+                                 referencedTableName="user"/>
+    </changeSet>
+    <changeSet id="1778014714795-23" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="role_id" baseTableName="user_roles" constraintName="fk_userol_on_role"
+                                 referencedColumnNames="id" referencedTableName="role"/>
+    </changeSet>
+    <changeSet id="1778014714795-24" author="Anokhin.A.Ig">
+        <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_roles" constraintName="fk_userol_on_user"
+                                 referencedColumnNames="id" referencedTableName="user"/>
+    </changeSet>
+
+</databaseChangeLog>
