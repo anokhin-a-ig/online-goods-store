@@ -246,3 +246,150 @@ src/
 Суммарно на команду: 286 человеко-часов
 На одного разработчика: 143 часа
 
+
+
+
+Ниже приведён **минимальный набор сущностей (Entity)** с полями и связями, необходимый для реализации описанного интернет-магазина.  
+Все поля указаны в стиле **Java (JPA)** — с типами и краткими注解-подсказками.
+
+---
+
+## 1. **User** (пользователь)
+> Таблица `users`
+
+| Поле | Тип | Примечание |
+|------|-----|-------------|
+| `id` | Long | PK, автоинкремент |
+| `email` | String | уникальный, not null |
+| `password` | String | хеш, not null |
+| `name` | String | not null |
+| `deliveryAddress` | String | адрес доставки (можно хранить строкой) |
+| `role` | Enum (String) | `ROLE_USER`, `ROLE_ADMIN` |
+| `blocked` | boolean | блокировка администратором |
+| `createdAt` | LocalDateTime | дата регистрации |
+
+**Связи:**
+- `OneToMany` → `Order` (история заказов)
+- `OneToOne` / `OneToMany` → `Cart` (у одного пользователя одна корзина)
+
+---
+
+## 2. **Category** (категория товара)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `name` | String (уникальное, not null) |
+| `description` | String |
+
+**Связи:**
+- `OneToMany` → `Product`
+
+---
+
+## 3. **Product** (товар)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `name` | String, not null |
+| `description` | String |
+| `price` | BigDecimal |
+| `stock` | int (количество на складе) |
+| `imageUrl` | String (ссылка на изображение) |
+| `createdAt` | LocalDateTime |
+| `category` | ManyToOne → `Category` |
+
+**Индексы:** для поиска по `name`, `description` (регистронезависимый через `@Column(columnDefinition = "varchar(255)")` + lower в запросе).
+
+---
+
+## 4. **Cart** (корзина)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `user` | OneToOne → `User` (может быть null для неавторизованных) |
+| `sessionId` | String (для гостей, если user = null) |
+| `createdAt` | LocalDateTime |
+
+**Связи:**
+- `OneToMany` (mappedBy = "cart") → `CartItem`
+
+---
+
+## 5. **CartItem** (позиция в корзине)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `cart` | ManyToOne → `Cart` |
+| `product` | ManyToOne → `Product` |
+| `quantity` | int (>0) |
+
+**Уникальное ограничение:** `(cart_id, product_id)`
+
+---
+
+## 6. **Order** (заказ)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `user` | ManyToOne → `User` |
+| `orderDate` | LocalDateTime |
+| `deliveryAddress` | String (копия из профиля на момент заказа) |
+| `paymentMethod` | Enum (CARD, CASH, etc.) |
+| `status` | Enum (CREATED, PAID, SHIPPED, DELIVERED, CANCELLED) |
+| `totalSum` | BigDecimal |
+
+**Связи:**
+- `OneToMany` (mappedBy = "order") → `OrderItem`
+
+---
+
+## 7. **OrderItem** (позиция заказа)
+
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `order` | ManyToOne → `Order` |
+| `product` | ManyToOne → `Product` (или хранить снэпшот: productName, priceAtTime) |
+| `quantity` | int |
+| `priceAtPurchase` | BigDecimal (фиксируем цену на момент заказа) |
+
+---
+
+## 8. **Дополнительно (опционально, но удобно)**
+
+### **AuditLog** (для админ-действий)
+| Поле | Тип |
+|------|-----|
+| `id` | Long |
+| `adminId` | Long |
+| `action` | String (CHANGE_STATUS, BLOCK_USER, etc.) |
+| `targetId` | Long |
+| `timestamp` | LocalDateTime |
+
+---
+
+## 9. **Связи и каскады (кратко)**
+
+- При удалении **User** → каскадно удалить его **Cart** и **Order** (или просто orphanRemoval).
+- При удалении **Product** → заблокировать добавление в корзину/заказы (лучше `soft delete` или проверять `stock` и `active` флаг).
+- При оформлении заказа: списывать `stock` из `Product`.
+- Гостевая корзина: идентифицируется по `sessionId`, при авторизации — перенос в `Cart` текущего пользователя.
+
+---
+
+## 10. **Пример статусов заказа (Enum)**
+
+```java
+public enum OrderStatus {
+    CREATED, PAID, SHIPPED, DELIVERED, CANCELLED
+}
+```
+
+---
+
+Если хочешь, могу сразу **написать JPA-классы** под эти сущности (с аннотациями `@Entity`, `@ManyToOne`, `@Enumerated` и т.д.) на Java.
