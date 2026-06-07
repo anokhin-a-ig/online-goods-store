@@ -33,7 +33,7 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(dao.password()));
             user.setCreateAt(time);
             user.setBlocked(false);
-            user.setBlockedAt(time);
+            user.setBlockedAt(null);
             user.setPerson(null);
             repo.save(user);
             return dao.username();
