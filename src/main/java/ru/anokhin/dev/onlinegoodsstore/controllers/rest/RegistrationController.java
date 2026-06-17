@@ -1,4 +1,4 @@
-package ru.anokhin.dev.onlinegoodsstore.rest;
+package ru.anokhin.dev.onlinegoodsstore.controllers.rest;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
