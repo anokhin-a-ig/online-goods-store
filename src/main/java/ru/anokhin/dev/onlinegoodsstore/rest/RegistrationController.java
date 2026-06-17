@@ -16,7 +16,7 @@ import ru.anokhin.dev.onlinegoodsstore.service.UserService;
 @RequestMapping("/v1/registration")
 public class RegistrationController {
 
-    private UserService userService;
+    private final UserService userService;
 
     @Autowired
     public RegistrationController(UserService userService) {

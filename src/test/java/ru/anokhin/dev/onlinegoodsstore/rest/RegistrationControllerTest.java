@@ -47,7 +47,7 @@ public class RegistrationControllerTest {
 
     @Test
     @DisplayName("Should successfully create new user")
-    void saveNewUserSuccess() throws Exception {
+    void saveNewUser_Success() throws Exception {
         String exceptedUsername = "testUser";
         when(userService.saveNewUser(any(RegistrationDao.class))).thenReturn(exceptedUsername);
 
