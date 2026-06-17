@@ -3,6 +3,11 @@ spring:
     name: Online Goods Store
     group: ru.anokhin.dev
     version: 0.0.1
+  security:
+    user:
+      name: user
+      password: user
+
 
   liquibase:
     enabled: false
@@ -22,7 +27,7 @@ spring:
     database: PostgreSQL
     show-sql: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
