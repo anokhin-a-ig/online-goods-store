@@ -2,6 +2,9 @@ package ru.anokhin.dev.onlinegoodsstore.service;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import ru.anokhin.dev.onlinegoodsstore.dao.RegistrationDao;
@@ -12,7 +15,7 @@ import ru.anokhin.dev.onlinegoodsstore.repository.UserRepository;
 import java.time.LocalDateTime;
 
 @Service
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository repo;
     private final PasswordEncoder passwordEncoder;
@@ -38,5 +41,11 @@ public class UserService {
             repo.save(user);
             return dao.username();
         }
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        return repo.findUserByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("User with username \"" + username + "\" not found"));
     }
 }

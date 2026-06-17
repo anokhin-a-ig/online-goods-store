@@ -17,13 +17,24 @@ public class SecurityConfig {
         http
                 .csrf().disable()// для тестирования
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/v1/registration/**").permitAll() // разрешаем регистрацию
+                        .requestMatchers(
+                                "/v1/registration/**"
+                                ,"/login"
+                        ).permitAll() // разрешаем регистрацию
                         .anyRequest().authenticated()
                 )
-                .httpBasic(); // или .formLogin()
+//                .httpBasic(); // или .formLogin()
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/index", true))
+//                .logout(logout -> logout
+//                        .logoutSuccessUrl("/login?logout")
+//                        .permitAll())
+        ;
 
         return http.build();
     }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(15);
