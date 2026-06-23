@@ -1,0 +1,55 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": ["AGENTS.md"],
+  "references": {
+    "spec": {
+      "path": "technical_specification.md",
+      "description": "Use for project requirements, architecture decisions, and feature specifications"
+    },
+    "readme": {
+      "path": "README.md",
+      "description": "Use for project setup instructions and profile configuration"
+    }
+  },
+  "command": {
+    "build": {
+      "description": "Собрать проект через Maven без тестов",
+      "template": "Выполни `mvn clean package -DskipTests=true` и сообщи результат"
+    },
+    "test": {
+      "description": "Запустить все тесты через Maven",
+      "template": "Выполни `mvn clean test` и сообщи результат. Если есть упавшие тесты, проанализируй и предложи исправления"
+    },
+    "dev": {
+      "description": "Запустить проект с dev-профилем через Docker Compose + Maven",
+      "template": "Сначала запусти `docker compose up -d` в корне проекта, затем `mvn spring-boot:run -Dspring-boot.run.profiles=dev`. Дождись полного старта и сообщи URL"
+    },
+    "run": {
+      "description": "Запустить Spring Boot с указанным профилем (dev/prod/test)",
+      "template": "Выполни `mvn spring-boot:run -Dspring-boot.run.profiles=$1` и сообщи результат"
+    },
+    "lint": {
+      "description": "Проверить код на соответствие стандартам",
+      "template": "Выполни `mvn compile` и проверь, нет ли ошибок компиляции или предупреждений. Также проверь стиль кода в последних изменённых файлах"
+    }
+  },
+  "agent": {
+    "review": {
+      "description": "Проверяет код на соответствие архитектуре и стандартам проекта",
+      "mode": "subagent",
+      "permission": {
+        "edit": "deny",
+        "bash": "deny"
+      },
+      "prompt": "Ты — строгий ревьюер Java/Spring Boot проекта online-goods-store. Проверяй код на:\n1. Соответствие архитектуре проекта (слои entity/repository/service/controller/config)\n2. Ошибки безопасности (CSRF, пароли в коде, SQL-инъекции, XSS)\n3. Использование BigDecimal вместо Double для цен\n4. Правильность JPA-маппинга и связей между сущностями\n5. Наличие и качество тестов\n6. Покрытие кодом требований из technical_specification.md\n\nДавай конкретные рекомендации по исправлению с указанием файла и строки."
+    }
+  },
+  "permission": {
+    "bash": {
+      "git *": "allow",
+      "mvn *": "allow",
+      "docker *": "ask",
+      "*": "ask"
+    }
+  }
+}
