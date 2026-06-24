@@ -1,6 +1,6 @@
 package ru.anokhin.dev.onlinegoodsstore.controllers.rest;
 
-
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.anokhin.dev.onlinegoodsstore.dao.RegistrationDao;
-import ru.anokhin.dev.onlinegoodsstore.entity.User;
 import ru.anokhin.dev.onlinegoodsstore.service.UserService;
 
 @RestController
@@ -24,12 +23,8 @@ public class RegistrationController {
     }
 
     @PostMapping
-    public ResponseEntity<?> saveNewUser(@RequestBody RegistrationDao dao) {
-        try {
-            String username = userService.saveNewUser(dao);
-            return ResponseEntity.status(HttpStatus.CREATED).body(username);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Error creating user: " + e.getMessage());
-        }
+    public ResponseEntity<String> saveNewUser(@Valid @RequestBody RegistrationDao dao) {
+        String username = userService.saveNewUser(dao);
+        return ResponseEntity.status(HttpStatus.CREATED).body(username);
     }
 }

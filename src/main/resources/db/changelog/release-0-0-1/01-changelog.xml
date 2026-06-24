@@ -175,5 +175,13 @@
         <addForeignKeyConstraint baseColumnNames="user_id" baseTableName="user_roles" constraintName="fk_userol_on_user"
                                  referencedColumnNames="id" referencedTableName="user"/>
     </changeSet>
+    <changeSet id="1778014714795-25" author="Anokhin.A.Ig">
+        <insert tableName="role">
+            <column name="role_name" value="ROLE_USER"/>
+        </insert>
+        <insert tableName="role">
+            <column name="role_name" value="ROLE_ADMIN"/>
+        </insert>
+    </changeSet>
 
 </databaseChangeLog>

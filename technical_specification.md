@@ -14,7 +14,7 @@
 **1.3. Технологический стек (обязательный)**
 - **Язык:** Java 17+
 - **Фреймворк:** Spring Boot 3.x (MVC, Security, Data JPA)
-- **База данных:** PostgreSQL (основная) + H2 (для тестов)
+- **База данных:** PostgreSQL (основная)
 - **Шаблонизатор:** Thymeleaf
 - **Сборка:** Maven
 - **Фронтенд:** HTML5, CSS3 (Bootstrap 5), JavaScript (без обязательного SPA)
