@@ -1,15 +1,19 @@
 package ru.anokhin.dev.onlinegoodsstore.dao;
 
+import ru.anokhin.dev.onlinegoodsstore.entity.enums.Role;
+
 import java.time.LocalDateTime;
-import java.util.Set;
 
 public record UserDao(
         Long id,
-        String username,
-        Long personId,
-        Set<String> roles,
-        LocalDateTime createAt,
-        boolean isBlocked,
-        LocalDateTime blockedAt
+        String email,
+        String password,
+        String name,
+        String deliveryAddress,
+        Role role,
+        boolean blocked,
+        int failedAttempts,
+        LocalDateTime lockTime,
+        LocalDateTime createdAt
 ) {
 }
