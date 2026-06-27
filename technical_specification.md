@@ -18,12 +18,14 @@
 - **Шаблонизатор:** Thymeleaf
 - **Сборка:** Maven
 - **Фронтенд:** HTML5, CSS3 (Bootstrap 5), JavaScript (без обязательного SPA)
-- **Дополнительно:** Spring Validation, Lombok, MapStruct, Liquibase/Flyway
+- **Дополнительно:** Spring Validation, Lombok, MapStruct, Liquibase, Spring Boot Actuator
 
 **1.4. Требования к развёртыванию**
 - Должна быть возможность запуска через `docker-compose` (app + postgres)
-- Порт приложения: 8080
-- Конфигурация через `application.yml` и переменные окружения
+- Порт приложения: по умолчанию 8080, возможность установки порта через параметры запуска
+- Конфигурация для продакшена через `application.yml` и переменные окружения
+- Конфигурация для 
+- В Docker-образ добавить health check (`/actuator/health`)
 
 ---
 
@@ -39,7 +41,8 @@
 - Список товаров с пагинацией и сортировкой (по цене, названию, дате добавления)
 - Фильтрация по категории, цене (диапазон), наличию
 - Карточка товара: название, цена, описание, изображение (ссылка или загрузка), количество на складе
-- Поиск по названию и описанию (регистронезависимый)
+- Изображения: формат JPEG/PNG, макс. 5 МБ, сохранять в `uploads/` (или облачное хранилище), при недоступности показывать placeholder
+- Поиск по названию и описанию (регистронезависимый, через `LOWER()` + индекс или `pg_trgm`)
 
 ### 2.3. Корзина
 - Добавление/удаление/изменение количества товара (без авторизации – через сессию/куки)
@@ -49,7 +52,7 @@
 
 ### 2.4. Заказы
 - Оформление заказа (выбор адреса доставки, способа оплаты)
-- Проверка остатков на складе перед оформлением
+- Проверка остатков на складе перед оформлением (с optimistic locking: поле `version` в `Product`, при конфликте — повтор транзакции или отказ с ошибкой)
 - После оформления: списание товаров, создание заказа со статусом `CREATED`
 - Статусы заказа: `CREATED`, `PAID`, `SHIPPED`, `DELIVERED`, `CANCELLED`
 - Пользователь может отменить заказ только в статусе `CREATED`
@@ -68,8 +71,10 @@
 
 - **Безопасность:**
     - пароли хранить в БД в зашифрованном виде (BCrypt)
+    - требования к паролю: минимум 8 символов, хотя бы одна цифра и одна латинская буква
     - защита от CSRF, XSS, SQL-инъекций
-    - после 5 неудачных попыток входа – временная блокировка на 15 минут
+    - после 5 неудачных попыток входа – временная блокировка на 15 минут (поля `failed_attempts` и `lock_time` в таблице `users`)
+    - ограничение скорости запросов (rate limiting) на эндпоинт `/login` (не более 10 попыток в минуту с одного IP)
 - **Производительность:**
     - время ответа API < 300 мс (95% запросов)
     - кэширование списка категорий и популярных товаров (Spring Cache + Caffeine)
@@ -87,19 +92,19 @@
 src/
 ├── main/
 │   ├── java/ru/anokhin/dev/onlinegoodsstore/
-│   │   ├── config/          (Security, WebMvc, Cache)
-│   │   ├── controller/      (ProductController, CartController, OrderController, AdminController)
-│   │   ├── dto/             (ProductDto, OrderDto, UserRegistrationDto)
-│   │   ├── entity/          (User, Product, Category, Order, OrderItem)
-│   │   ├── repository/      (JPA репозитории)
-│   │   ├── service/         (интерфейсы + реализации)
-│   │   ├── mapper/          (MapStruct)
-│   │   ├── exception/       (кастомные исключения + @ControllerAdvice)
-│   │   └── util/            (хелперы)
+│   │   ├── config/          (Security, WebMvc, Cache и аналогичные)
+│   │   ├── controller/      (ProductController, CartController, OrderController, AdminController и аналогичные)
+│   │   ├── dto/             (ProductDto, OrderDto, UserRegistrationDto и аналогичные)
+│   │   ├── entity/          (User, Product, Category, Order, OrderItem и аналогичные)
+│   │   ├── repository/      (JPA репозитории и аналогичные)
+│   │   ├── service/         (интерфейсы + реализации и аналогичные)
+│   │   ├── mapper/          (MapStruct и аналогичные)
+│   │   ├── exception/       (кастомные исключения + @ControllerAdvice и аналогичные)
+│   │   └── util/            (хелперы и аналогичные)
 │   └── resources/
-│       ├── db/migration/    (Liquibase changelog)
-│       ├── static/          (css, js, images)
-│       ├── templates/       (Thymeleaf)
+│       ├── db/migration/    (Liquibase changelog и аналогичные)
+│       ├── static/          (css, js, images и аналогичные)
+│       ├── templates/       (Thymeleaf и аналогичные)
 │       └── application.yml
 └── test/                    (тесты)
 ```
@@ -108,33 +113,67 @@ src/
 
 ## 5. Схема базы данных (основные таблицы)
 
-- `users` (id, email, password, name, address, role, blocked, created_at)
-- `categories` (id, name, parent_id – для дерева)
-- `products` (id, name, description, price, stock_quantity, image_url, category_id, created_at)
-- `carts` (id, user_id – может быть null для сессий)
+- `users` (id, email, password, name, address, role, blocked, failed_attempts, lock_time, created_at)
+- `categories` (id, name, parent_id – дерево, макс. глубина 2 уровня, активна ли категория; при удалении родительской — каскадно деактивировать дочерние)
+- `products` (id, name, description, price, stock, version, image_url, category_id, active, created_at)
+- `carts` (id, user_id, session_id, created_at)
 - `cart_items` (id, cart_id, product_id, quantity)
-- `orders` (id, user_id, order_date, total_amount, status, delivery_address, payment_method)
+- `orders` (id, user_id, order_date, total_sum, status, delivery_address, payment_method)
 - `order_items` (id, order_id, product_id, quantity, price_at_purchase)
 
-> Индексы: products.name (поиск), orders.user_id, orders.status.
+> Индексы: products.name (поиск), products.category_id, orders.user_id, orders.status, users.email.
+> Версионность: products.version (оптимистичная блокировка для конкурентного списания остатков).
 
 ---
 
 ## 6. API (основные эндпоинты)
 
+### Формат ответов
+
+**Успех (200/201):**
+```json
+{
+  "data": { ... },
+  "timestamp": "2026-06-27T12:00:00"
+}
+```
+
+**Пагинация** (`GET /products` и `GET /orders`):
+```json
+{
+  "data": { "content": [...], "totalPages": 5, "totalElements": 48, "number": 0, "size": 10 },
+  "timestamp": "..."
+}
+```
+
+**Ошибка (4xx/5xx):**
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Товар с id=5 не найден",
+  "path": "/products/5",
+  "timestamp": "2026-06-27T12:00:00"
+}
+```
+
+Обработка ошибок — единый `@RestControllerAdvice` (`GlobalExceptionHandler`).
+
 | Метод | URL                       | Роль       | Описание                        |
 |-------|---------------------------|------------|---------------------------------|
-| GET   | /products                 | ANY        | список товаров с фильтрацией    |
+| GET   | /products                 | ANY        | список товаров с фильтрацией (пагинированный) |
 | GET   | /products/{id}            | ANY        | карточка товара                 |
 | POST  | /cart/add/{productId}     | ANY        | добавить в корзину              |
 | GET   | /cart                     | ANY        | просмотр корзины                |
 | POST  | /cart/update              | ANY        | изменить количество             |
 | DELETE| /cart/remove/{itemId}     | ANY        | удалить из корзины              |
 | POST  | /orders/create            | USER       | оформить заказ                  |
-| GET   | /orders                   | USER       | история заказов                 |
-| GET   | /admin/orders             | ADMIN      | все заказы                      |
+| GET   | /orders                   | USER       | история заказов (пагинированная)|
+| GET   | /admin/orders             | ADMIN      | все заказы с фильтром           |
 | PUT   | /admin/orders/{id}/status | ADMIN      | изменить статус заказа          |
 | CRUD  | /admin/products           | ADMIN      | управление товарами             |
+
+> **CORS:** по умолчанию разрешён только `localhost:8080` (для REST — настроить через `WebMvcConfigurer`).
 
 ---
 
@@ -166,25 +205,6 @@ src/
 - REST API для мобильного клиента (Jackson + OpenAPI 3)
 - Загрузка нескольких изображений для товара
 - Система отзывов и рейтингов товаров
-
----
-
-## 10. Сроки и этапы (пример)
-
-| Этап | Задачи                              | Дней |
-|------|-------------------------------------|------|
-| 1    | Настройка проекта, БД, Security     | 2    |
-| 2    | Каталог, поиск, фильтры             | 3    |
-| 3    | Корзина (сессия + БД)               | 2    |
-| 4    | Заказы, списание остатков           | 2    |
-| 5    | Админ-панель                        | 3    |
-| 6    | Тесты, отладка, документация, докер | 2    |
-
-> **Итого:** 14 рабочих дней.
-
----
-
-# Данное ТЗ может изменяться и дополняться по желанию заказчика и после согласования с разработчиками
 
 ---
 
@@ -265,7 +285,9 @@ src/
 | `name` | String | not null |
 | `deliveryAddress` | String | адрес доставки (можно хранить строкой) |
 | `role` | Enum (String) | `ROLE_USER`, `ROLE_ADMIN` |
-| `blocked` | boolean | блокировка администратором |
+| `blocked` | boolean | блокировка администратором, `@Column(nullable = false, columnDefinition = "boolean default false")` |
+| `failedAttempts` | int | количество неудачных попыток входа (default 0) |
+| `lockTime` | LocalDateTime | временная блокировка до (null — не заблокирован) |
 | `createdAt` | LocalDateTime | дата регистрации |
 
 **Связи:**
@@ -276,14 +298,16 @@ src/
 
 ## 2. **Category** (категория товара)
 
-| Поле | Тип |
-|------|-----|
-| `id` | Long |
-| `name` | String (уникальное, not null) |
-| `description` | String |
+| Поле | Тип | Примечание |
+|------|-----|-------------|
+| `id` | Long | PK, автоинкремент |
+| `name` | String | уникальное, not null |
+| `parent` | ManyToOne → `Category` | self-reference для дерева категорий |
+| `description` | String | |
 
 **Связи:**
 - `OneToMany` → `Product`
+- `ManyToOne` → `Category` (parent, self‑reference для иерархии)
 
 ---
 
@@ -296,11 +320,13 @@ src/
 | `description` | String |
 | `price` | BigDecimal |
 | `stock` | int (количество на складе) |
+| `version` | int (оптимистичная блокировка, `@Version`) |
 | `imageUrl` | String (ссылка на изображение) |
+| `active` | boolean (soft-delete, default true) |
 | `createdAt` | LocalDateTime |
 | `category` | ManyToOne → `Category` |
 
-**Индексы:** для поиска по `name`, `description` (регистронезависимый через `@Column(columnDefinition = "varchar(255)")` + lower в запросе).
+**Индексы:** для полнотекстового поиска — GIN индекс с `pg_trgm` на `name` и `description`, либо `LOWER(name)` с `@Index`.
 
 ---
 
@@ -375,7 +401,7 @@ src/
 
 ## 9. **Связи и каскады (кратко)**
 
-- При удалении **User** → каскадно удалить его **Cart** и **Order** (или просто orphanRemoval).
+- При удалении **User** → удалить его **Cart**, но **не удалять заказы** (финансовый документ, должны храниться всегда). Вместо удаления — soft-delete или блокировка (`blocked = true`).
 - При удалении **Product** → заблокировать добавление в корзину/заказы (лучше `soft delete` или проверять `stock` и `active` флаг).
 - При оформлении заказа: списывать `stock` из `Product`.
 - Гостевая корзина: идентифицируется по `sessionId`, при авторизации — перенос в `Cart` текущего пользователя.
@@ -392,4 +418,18 @@ public enum OrderStatus {
 
 ---
 
-Если хочешь, могу сразу **написать JPA-классы** под эти сущности (с аннотациями `@Entity`, `@ManyToOne`, `@Enumerated` и т.д.) на Java.
+## 11. История изменений
+
+| Дата | Автор | Изменение |
+|------|-------|-----------|
+| 2026-06-27 | — | Добавлены поля `failed_attempts`, `lock_time` в `users` (блокировка при 5 неудачных входах) |
+| 2026-06-27 | — | Добавлено поле `version` в `products` (optimistic locking для конкурентного списания) |
+| 2026-06-27 | — | Добавлено поле `active` в `products` (soft-delete) |
+| 2026-06-27 | — | Уточнена схема категорий: макс. глубина 2, каскадная деактивация |
+| 2026-06-27 | — | Требования к паролю: минимум 8 символов, цифра + буква |
+| 2026-06-27 | — | Формат ответов API: единый wrapper для успеха, ошибки и пагинации |
+| 2026-06-27 | — | Добавлены ограничения изображений: JPEG/PNG, макс. 5 МБ |
+| 2026-06-27 | — | Добавлен Spring Boot Actuator в стек |
+| 2026-06-27 | — | Добавлен CORS (localhost:8080) и rate limiting на `/login` |
+
+---
