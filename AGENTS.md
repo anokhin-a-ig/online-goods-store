@@ -77,6 +77,11 @@ Dev profile (`application-dev.yml`):
 - `.opencode/skills/code-review/SKILL.md` has detailed review checklist (layers, security, JPA, tests)
 - `technical_specification.md` contains full entity schemas, API endpoints, DB table definitions, and security requirements
 
+## Git
+
+- После создания нового файла сразу выполняй `git add <файл>`, чтобы файл был проиндексирован.
+- Если файлов несколько — добавляй их одной командой `git add <file1> <file2> ...`.
+
 ## CI
 
 Jenkins pipeline in `pipeline.groovy`: `cleanWs` → `mvn --version` → checkout `*/master` → `mvn clean package -DskipTests=true`.

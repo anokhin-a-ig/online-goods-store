@@ -1,6 +1,11 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md"],
+  "instructions": [
+    "AGENTS.md",
+    "changed-history.md",
+    "skills/*",
+    "docs/*"
+  ],
   "references": {
     "spec": {
       "path": "technical_specification.md",
