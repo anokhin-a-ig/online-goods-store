@@ -6,9 +6,9 @@ spring:
 
 server:
   address: localhost
-  port: 8080
+  port: ${SERVER_PORT:8080}
   servlet:
-    context-path: /online-goods-store
+#    context-path: /online-goods-store
     encoding:
       charset: UTF-8
       enabled: true
