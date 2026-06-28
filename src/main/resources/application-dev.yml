@@ -3,12 +3,6 @@ spring:
     name: Online Goods Store
     group: ru.anokhin.dev
     version: 0.0.1
-  security:
-    user:
-      name: user
-      password: user
-
-
   liquibase:
     enabled: false
 
