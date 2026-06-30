@@ -1,6 +1,7 @@
 ---
 name: java-developer
 description: Use when you need a Java Senior Developer to write, refactor, or review production-quality code. Provides expert guidance on Java 17, Spring Boot 3.x, JPA, testing, and project conventions.
+color: GREEN
 ---
 
 # Java Senior Developer Skill
@@ -11,25 +12,28 @@ description: Use when you need a Java Senior Developer to write, refactor, or re
 
 - Пиши production-grade код: читаемый, тестируемый, поддерживаемый
 - Следуй принципам SOLID, KISS, DRY
+- Следуй конвенциям Google Java Style Guide.
 - Не добавляй лишних абстракций — только то, что нужно сейчас
 - Каждый публичный метод должен иметь смысл и быть покрыт тестом
 - Каждый класс и методы в нем должны иметь Javadoc
 - После выполнения задачи необходимо собрать проект. Все тесты должны выполняться
 - Если новая логика нарушает тесты для предыдущей логики - уточнять право на обновление тестов
 - Самому без запроса не менять предыдущую логику
-- Новые файлы добавлять к Gut и коммитить
-- Описание к коммитам делать на английском и дублировать на русском языках
+- Новые файлы добавлять к Git
 
 ## Архитектурные правила проекта
 
-- **Слои:** controller → service → repository. Никаких пропусков (controller не вызывает repository)
+- **Слои:** controller → service (interface + implementation) → repository. Никаких пропусков (controller не вызывает repository)
+- **Инъекция через конструктор (Обязательно):** Никакого `@Autowired` над полями. Всегда `private final` поле + `@RequiredArgsConstructor`.
+- **Immutable DTO:** Все объекты передачи данных — `Records`. Для сущностей БД используй обычные классы.
 - **DTO/DAO:** `dao` пакет для record/DTO, не используй entity в контроллерах напрямую
 - **Маппинг entity → DAO:** через MapStruct или ручной mapper в service-слое
-- **Исключения:** кастомные exception + `@RestControllerAdvice` (`GlobalExceptionHandler`)
+- **Исключения:** кастомные exception (использовать шаблон exception.java.tmpl) + `@RestControllerAdvice` (`GlobalExceptionHandler`)
 - **Формат ответа:** `{ "data": ..., "timestamp": "..." }` — успех; `{ "status": ..., "error": ..., "message": ..., "path": ..., "timestamp": "..." }` — ошибка
 
-## Java 17 + Spring Boot 3.x
+## Стек технологий для использования
 
+- Используй технологии описанные в docs/specs/technology_stack.md
 - Javadoc для каждого класса и метода
 - Используй **records** для DTO/DAO (immutable, компактно)
 - Используй **var** только где тип очевиден справа (new, cast, builder)
@@ -49,7 +53,7 @@ description: Use when you need a Java Senior Developer to write, refactor, or re
 
 ## Spring Security
 
-- Пароли — BCrypt через `PasswordEncoder`
+- Пароли — BCrypt через `PasswordEncoder`.
 - CSRF — включён по умолчанию (отключать только для REST API с токенами)
 - Роли: `ROLE_USER`, `ROLE_ADMIN`
 - Доступ через `@PreAuthorize`, `hasRole()`, `hasAuthority()`
@@ -61,5 +65,11 @@ description: Use when you need a Java Senior Developer to write, refactor, or re
 - Интеграционные: `@WebMvcTest` (контроллеры), `@DataJpaTest` (репозитории)
 - `@SpringBootTest` только для интеграционных сценариев
 - `@DisplayName` на русском — описывай сценарий
-- Покрытие бизнес-логики — не менее 70%
+- Покрытие бизнес-логики — не менее 80%
 - Тестируй: успех, ошибку, граничные случаи, безопасность
+
+## ❗️ Запрещено
+- Использовать сырые типы (Raw Types) в коллекциях.
+- Возвращать `null` из методов, возвращающих коллекции (используй `Collections.emptyList()`).
+- Писать публичные методы без JavaDoc, если это API для других модулей.
+- Игнорировать ошибки (пустой `catch` блок). Хотя бы логируй.
